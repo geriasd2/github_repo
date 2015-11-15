@@ -1,66 +1,63 @@
 /*
  * Quadtree.hpp
  *
- *  Created on: 2015. nov. 6.
+ *  Created on: 2015. nov. 9.
  *      Author: Gerike
  */
 
 #ifndef QUADTREE_HPP_
 #define QUADTREE_HPP_
 #include <vector>
-
+#include "points.hpp"
 class Quadtree{
 	struct node {
 
 
 	    node* child_1,*child_2,*child_3,*child_4,*parent;
-	    points key;
-	    node (const points &k,node*p): child_1(0), child_2(0),child_3(0),child_4(0),
-	    		parent(p),key(k){};
-	    node ():child_1(0), child_2(0),child_3(0),child_4(0),parent(0),key(){};
+	    std::vector <points> key;
+	    bool rect;
+	    double x,y,x_length,y_length;
+	    node (node*p,double a,double b,double c,double d): child_1(nullptr), child_2(nullptr),child_3(nullptr),child_4(nullptr),
+	    		parent(p),rect(false),x(a),y(b),x_length(c),y_length(d){};
+};
 
 
-	};
 
  	node* root;
- 	void _destroy (node* x);
+
+ 	std::ostream& _bejaras(std::ostream &o, const node*x);
+ 	std::vector<node*> _bejaras_2(std::vector<node*> &v, node* x);
+
 public:
- 	std::vector<points> get_next(const points key);
-    void insert(const points &key);
+ 	std::ostream&  bejaras(std::ostream &o);
+    std::vector <node*> find_neighbors(const points &k);
+    std::vector <points> find_nearest_neighbors(const points &k, unsigned int n );
+    node* find_insert(const points &k);
+    void insert(const points &k);
 
-    Quadtree(int a,int b,int c,int d){
-    	points k(a,b,c,d);
 
-    	node* x=new node(k,nullptr);
+
+
+
+    std::vector<node*>  bejaras_2(std::vector<node*> &v);
+
+   void robbantas(node* x);
+
+   bool check(const node* x,const points k);
+
+
+    Quadtree(double a,double b,double c,double d){
+
+
+    	node* x=new node(nullptr,a,b,c,d);
     			root=x;
+};
 
 
 
-    set_children(x);
+ //   ~Quadtree(){ _destroy(root);};
 
 
-
-    			/*
-
-    			points p;
-    			node* r_1=new node(p,x);
-    			x->child_1=r_1;
-    			node* r_2=new node(p,x);
-    			x->child_2=r_2;
-    			node* r_3=new node(p,x);
-    			x->child_3=r_3;
-    			node* r_4=new node(p,x);
-    			x->child_4=r_4;
-
-    			        x->child_1->key.set_first(x->key.x_from,x->key.x_to,x->key.y_from,x->key.y_to);
-    					x->child_2->key.set_second(x->key.x_to,x->key.y_from,x->key.y_to);
-    					x->child_3->key.set_third(x->key.x_from,x->key.x_to,x->key.y_to);
-    					x->child_4->key.set_fourth(x->key.x_to,x->key.y_to);
-   */
-    };
-    ~Quadtree(){ _destroy(root);};
-     void set_children(node* x);
-     void _insert(const points &k, node* x);
 
 };
 
@@ -69,29 +66,148 @@ public:
 
 
 
+std::vector<points> Quadtree::find_nearest_neighbors(const points &k,unsigned int n){
 
-void Quadtree::set_children(node* x){
-	                points p;
-	    			node* r_1=new node(p,x);
-	    			x->child_1=r_1;
-	    			node* r_2=new node(p,x);
-	    			x->child_2=r_2;
-	    			node* r_3=new node(p,x);
-	    			x->child_3=r_3;
-	    			node* r_4=new node(p,x);
-	    			x->child_4=r_4;
+std::vector<Quadtree::node*> v=find_neighbors(k);
+std::vector<points> v_2;
+std::vector<int> tmp;
 
-	    			        x->child_1->key.set_first(x->key.x_from,x->key.x_to,x->key.y_from,x->key.y_to);
-	    					x->child_2->key.set_second(x->key.x_to,x->key.y_from,x->key.y_to);
-	    					x->child_3->key.set_third(x->key.x_from,x->key.x_to,x->key.y_to);
-	    					x->child_4->key.set_fourth(x->key.x_to,x->key.y_to);
+for (unsigned int i=0;i<n;i++){
+	int mintav=(k.x-v[0]->key[0].x*k.x-v[0]->key[0].x+k.y-v[0]->key[0].y*k.y-v[0]->key[0].y);
+	int pos1=0;
+	int pos2=0;
+	for (unsigned int j=0;j<v.size();j++){
+		for (unsigned int k=0;k<v[j]->key.size();k++){
+			if (mintav>v[j]->key[k].x*v[j]->key[k].x+v[j]->key[k].y*v[j]->key[k].y){
+				mintav=v[j]->key[k].x*v[j]->key[k].x+v[j]->key[k].y*v[j]->key[k].y;
+				pos1=j;
+				pos2=k;
+			}
+		}
+	}
+
+	v_2.push_back(v[pos1]->key[pos2]);
+}
+
+
+
+
+return v_2;
+}
+
+
+
+
+
+
+
+
+std::vector<Quadtree::node*> Quadtree::bejaras_2(std::vector<node*>&v){
+
+
+	return _bejaras_2(v,root);
+}
+
+
+std::vector<Quadtree::node*> Quadtree::_bejaras_2(std::vector<node*>&v, node*x){
+
+
+
+if (x->rect){
+	v.push_back(x);
+}
+
+
+
+
+	if (x->child_1!=0){
+		_bejaras_2(v,x->child_1);
+	}
+	if (x->child_2!=0){
+		_bejaras_2(v,x->child_2);
+	}
+	if (x->child_3!=0){
+		_bejaras_2(v,x->child_3);
+	}
+	if (x->child_4!=0){
+		_bejaras_2(v,x->child_4);
+	}
+
+
+
+	return v;
+
+
+
+
 
 }
 
 
 
-void Quadtree::insert(const points & k){
-	_insert(k,root);
+
+std::vector<Quadtree::node*> Quadtree::find_neighbors(const points &k){
+
+	std::vector <node*> v;
+	bejaras_2(v);
+
+
+    std::vector<node*> v_3;
+    v_3.push_back(find_insert(k));
+
+
+    for (unsigned int i=0;i<v.size();i++){
+       if (       (v_3[0]->x<v[i]->x && ((v_3[0]->x+v_3[0]->x_length)>v[i]->x )) || (v_3[0]->y<v[i]->y && ((v_3[0]->y+v_3[0]->y_length)>v[i]->y))){
+    	   v_3.push_back(v[i]);
+       }
+    }
+
+
+
+
+
+
+
+return v_3;
+}
+
+
+
+
+
+
+Quadtree::node* Quadtree::find_insert(const points &k){
+
+	node* temp=root;
+
+	while (temp->rect){
+
+	 if (k.x<(temp->x+temp->x_length/2) && k.y<(temp->y+temp->y_length/2)){
+		 temp=temp->child_1;
+
+	 }
+	 else if (k.x<(temp->x+temp->x_length) && k.y<(temp->y+temp->y_length/2)){
+		 temp=temp->child_2;
+	 }
+	 else if (k.x<(temp->x+temp->x_length/2) && k.y<(temp->y+temp->y_length)){
+		 temp=temp->child_3;
+
+	 }
+	 else  {
+		 temp=temp->child_4;
+
+	 }
+	}
+
+
+
+
+
+
+
+
+
+return temp;
 }
 
 
@@ -105,126 +221,195 @@ void Quadtree::insert(const points & k){
 
 
 
-void Quadtree::_insert(const points & k, node * n){
+
+
+
+bool Quadtree::check (const node* temp,const points k){
+
+
+
+
+	 for (unsigned int i=0;i<temp->key.size();i++){
+	        			 if (temp->key[i].x==k.x && temp->key[i].y==k.y){
+
+	        				 return false;
+
+	        			 }
+	 }
+
+		return true;
+}
+
+
+
+
+
+
+
+
+
+
+
+std::ostream& Quadtree::_bejaras(std::ostream& o, const node* x){
+
+		o<<x->x<<" "<<x->y<<" "<<x->x_length<<" "<<x->y_length<<" ";
+
+
+
+
+
+o<<std::endl;
+
+
+if (x->child_1!=0){
+	_bejaras(o,x->child_1);
+}
+if (x->child_2!=0){
+	_bejaras(o,x->child_2);
+}
+if (x->child_3!=0){
+	_bejaras(o,x->child_3);
+}
+if (x->child_4!=0){
+	_bejaras(o,x->child_4);
+}
+
+
+
+return o;
+}
+
+std::ostream& Quadtree::bejaras(std::ostream &o){
+	return (_bejaras(o,root));
+}
+
+
+
+
+
+
+
+void Quadtree::robbantas(node *x){
+	x->rect=true;
+//std::cout<<x->x<<" "<<x->y<<std::endl;
+
+	node* new_child_1=new node(x,x->x,x->y,x->x_length/2,x->y_length/2);
+	node* new_child_2=new node(x,x->x+x->x_length/2,x->y,x->x_length/2,x->y_length/2);
+	node* new_child_3=new node(x,x->x,x->y+x->y_length/2,x->x_length/2,x->y_length/2);
+	node* new_child_4=new node(x,x->x+x->x_length/2,x->y+x->y_length/2,x->x_length/2,x->y_length/2);
+
+
+
+      //  std::cout<<new_child_1->x<<" "<<new_child_1->y<<"  "<<new_child_1->x_length<<" "<<new_child_1->y_length<<std::endl;
+
+	x->child_1=new_child_1;
+	x->child_2=new_child_2;
+	x->child_3=new_child_3;
+	x->child_4=new_child_4;
+
+
+	for (unsigned int i=0;i<x->key.size();i++){
+		if (x->key[i].x<x->x+x->x_length/2 && x->key[i].y<x->y+x->y_length/2){
+			x->child_1->key.push_back(x->key[i]);
+		}
+
+		else if (x->key[i].x<x->x+x->x_length && x->key[i].y<x->y+x->y_length/2){
+			x->child_2->key.push_back(x->key[i]);
+		}
+
+		else if (x->key[i].x<x->x+x->x_length/2 && x->key[i].y<x->y+x->y_length){
+			x->child_3->key.push_back(x->key[i]);
+		}
+		else {
+			x->child_4->key.push_back(x->key[i]);
+		}
+	}
+
+	x->key.clear();
+
+
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+void Quadtree::insert(const points &k){
+
+	node* temp=root;
 	bool z=true;
-
-
-
-	node* temp=n;
-
-
-
-
 	while (z){
-		if (!temp->child_1->key && !(temp->child_1->key<k)){         //1. ures,2.nal kisebb
-
-			temp->child_1->key.shape=points::point;
-			temp->child_1->key.x=k.x;
-			temp->child_1->key.y=k.y;
-			z=false;
-			//std::cout<<"itt vok1"<<"pont: "<<k.x<<" - "<<k.y<<std::endl;
-
-		}
+         if (!(temp->rect)){
+        	 if (temp->key.size()<20){
+        		 if (check(temp,k)){
+        		 temp->key.push_back(k);
 
 
-		else if (!temp->child_2->key && !(temp->child_2->key<k) && temp->child_1->key<k){
-			            temp->child_2->key.shape=points::point;
-						temp->child_2->key.x=k.x;
-						temp->child_2->key.y=k.y;
-					z=false;
-					//std::cout<<"itt vok2"<<std::endl;
-				}
+        		 }
+        		 else {return;}
 
-		else if (!temp->child_3->key && !(temp->child_3->key<k) && temp->child_2->key<k){
-						temp->child_3->key.shape=points::point;
-						temp->child_3->key.x=k.x;
-						temp->child_3->key.y=k.y;
-
-							z=false;
-						//	std::cout<<"itt vok3"<<std::endl;
-						}
-		else if (!temp->child_4->key &&  temp->child_3->key<k){
-						temp->child_4->key.shape=points::point;
-						temp->child_4->key.x=k.x;
-						temp->child_4->key.y=k.y;
-							z=false;
+        		 z=false;
 
 
-						}                                               //ures helyre bekotes lerendezve
+        	 }
 
 
-		else if (temp->child_1->key==k){
-			temp=temp->child_1;
-			//std::cout<<"itt vok5"<<std::endl;
-		}
+        	 else {
+                   if (check(temp,k)){
+                	   robbantas(temp);
+
+                   }
+                   else {return;}
+
+
+        	 }
+         }
 
 
 
-		else if (temp->child_2->key==k){
-					temp=temp->child_2;
-				//	std::cout<<"itt vok6"<<std::endl;
-				}
-
-		else if (temp->child_3->key==k){
-					temp=temp->child_3;
-			//		std::cout<<"itt vok7"<<std::endl;
-				}
+         else {
 
 
-		else if (temp->child_4->key==k){
-					temp=temp->child_4;
-				//	std::cout<<"itt vok8"<<std::endl;
-				}
-
-                                              //tovabbmentem rect menten
-
-		else if (!(temp->child_1->key<k) && temp->child_1->key.shape==points::point){            //1.re kellene illeszteni de az pont a.eset
-		//	std::cout<<"itt vok9"<<std::endl;
-			points p=temp->child_1->key;
+        	 if (k.x<(temp->x+temp->x_length/2) && k.y<(temp->y+temp->y_length/2)){
+        		 temp=temp->child_1;
 
 
-			temp->child_1->key=temp->child_1->key++;
-            set_children(temp->child_1);
-            _insert(p,temp->child_1);
-
-			temp=temp->child_1;
-		//	std::cout<<temp->key.x_to<<" - "<<temp->key.y_to<<std::endl;
-
-		}
 
 
-		else if (temp->child_1->key<k && !(temp->child_2->key<k && temp->child_2->key.shape==points::point)){  //2.ra kellene de az pont
 
-			points p=temp->child_2->key;
 
-			        temp->child_2->key=temp->child_2->key++;
-					set_children(temp->child_2);
-			        _insert(p,temp->child_2);
-			        temp=temp->child_2;
-				//	std::cout<<"itt vok10"<<std::endl;
-				}
 
-		else if (temp->child_2->key<k && !(temp->child_3->key<k) && temp->child_3->key.shape==points::point){  //3.ra kellene
+        	 }
+        	 else if (k.x<(temp->x+temp->x_length) && k.y<(temp->y+temp->y_length/2)){
+        		 temp=temp->child_2;
+        	 }
+        	 else if (k.x<(temp->x+temp->x_length/2) && k.y<(temp->y+temp->y_length)){
+        		 temp=temp->child_3;
 
-			points p=temp->child_3->key;
+        	 }
+        	 else  {
+        		 temp=temp->child_4;
 
-							temp->child_3->key=temp->child_3->key++;
-							set_children(temp->child_3);
-							_insert(p,temp->child_3);
-							temp=temp->child_3;
-					//		std::cout<<"itt vok11"<<std::endl;
-						}
+        	 }
+         }
 
-		else if (temp->child_3->key<k && temp->child_4->key.shape==points::point){              //4.re kellene
-
-			points p=temp->child_4->key;
-
-							temp->child_4->key=temp->child_4->key++;
-							set_children(temp->child_4);
-							_insert(p,temp->child_4);
-							temp=temp->child_4;
-					//		std::cout<<"itt vok12"<<std::endl;
-						}
 
 
 	}
@@ -234,18 +419,15 @@ void Quadtree::_insert(const points & k, node * n){
 
 
 
-void Quadtree:: _destroy(node * x){
-delete x;
-	/*
- if (x!=x->child_1 && x){
-	 _destroy (x->child_1);
-	 _destroy (x->child_2);
-	 _destroy (x->child_3);
-	 _destroy (x->child_4);
-	 delete x;
- }
-*/
-}
+
+
+
+
+
+
+
+
+
 
 
 
