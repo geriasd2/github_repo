@@ -34,7 +34,7 @@ class Quadtree{
  	double meroleges(const points k,const node*n);
 
 public:
- 	std::vector<points> BRUTEFORCE(const points k,int i);
+ //	std::vector<points> BRUTEFORCE(const points k,int i);
  	std::ostream&  bejaras(std::ostream &o);
     void insert(const points &k);
     std::vector<points> kFind(const points k,int  i);
@@ -69,12 +69,38 @@ public:
 
 
 /*
-std::vector<points> Quadtree:: BRUTEFORCE(const points k,int i){
+std::vector<points> Quadtree:: BRUTEFORCE(const points k,int z){
+std::vector<points> megoldas;
+	std::vector <node*> leafs;
+
+
+		leafs=_bejaras_2(leafs,root);
+
+		std::vector<double> dist;
+		for (unsigned int i=0;i<leafs.size();i++){
+			for (unsigned int j=0;j<leafs[i]->key.size();j++){
+		dist.push_back(distance(k,leafs[i]->key[j]));
+			}
+		}
+
+
+
+		for (unsigned int j=0;j<z;j++){
+			int min =dist[j];
+					int pos=j;
+		for (unsigned int i=j+1;i<dist.size();i++){
+			if (dist[i]<min){
+				min=dist[i];
+				pos=i;
+			}
+		}
+
+		}
 
 };
+
+
 */
-
-
 
 
 
@@ -166,6 +192,7 @@ double Quadtree::distance (const points k,const node* n){
 		}
 
 	else{
+
 		points tmp0,tmp1,tmp2,tmp3;
 		tmp0.x=n->x;
 		tmp0.y=n->y;
@@ -217,10 +244,11 @@ std::vector<points>Quadtree::kFind(const points p, int k){
 	leafs=_bejaras_2(leafs,root);
 
 
-	for (unsigned int i=0;i<leafs.size();i++){
+	for (double i=0;i<leafs.size();i++){
 		points sign(i,100);
 		q.push(sign,-distance(p,leafs[i]));
 	}
+
 
 
 
@@ -228,15 +256,22 @@ std::vector<points>Quadtree::kFind(const points p, int k){
 		points sign=q.top();
 		q.pop();
 		if (sign.y==100){
-			for (unsigned int j=0;j<leafs[sign.x]->key.size();j++){
+			for (double j=0;j<leafs[sign.x]->key.size();j++){
 				points sign_2(sign.x,j);
 				q.push(sign_2,-distance(p,leafs[sign.x]->key[j]));
 			}
+
+
+
+
 		}
+
+
 			else {
 				solution.push_back(leafs[sign.x]->key[sign.y]);
 				k--;
 			}
+
 		}
 
 	return solution;

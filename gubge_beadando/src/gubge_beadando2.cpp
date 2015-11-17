@@ -50,6 +50,14 @@ return v;
 
 
 
+void write (vector <points>&v, std::ofstream&f1,const points k){
+
+
+	for (unsigned int i=0;i<v.size();i++){
+	points temp=v[i];
+		f1<<sqrt((k.x-temp.x)*(k.x-temp.x)+(k.y-temp.y)*(k.y-temp.y))<<endl;
+	}
+}
 
 
 
@@ -72,7 +80,10 @@ int main() {
 
 		points p=v[i];
 	tree.insert(p);
-	cout<<i<<endl;
+
+
+
+
 }
 
 	ofstream f2("rect.txt",std::ofstream::out);
@@ -83,12 +94,12 @@ points tmp(30,50);
 vector <points> v2;
 
 
-v2=tree.kFind(tmp,5);
-cout<<endl<<v2.size()<<endl;
-for (unsigned int i=v2.size();i>0;i--){
-	cout<<v2[i-1].x<<" - "<<v2[i-1].y<<endl;
-}
+v2=tree.kFind(tmp,10);
 
+
+for (unsigned int i=0;i<v2.size();i++){
+	cout<<v2[i].x<<" - "<<v2[i].y<<endl;
+}
 
 
 

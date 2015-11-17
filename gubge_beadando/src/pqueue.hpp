@@ -26,7 +26,7 @@ private:
     struct Node {
         T value;
         double priority;
-        Node(T value_, int priority_) : value(value_), priority(priority_) { }
+        Node(T value_, double priority_) : value(value_), priority(priority_) { }
         bool operator<(const Node &x) const
         {
             return priority < x.priority;
@@ -41,6 +41,8 @@ protected:
 	Heap<Node> heap;
 
 public:
+
+
 	PriorityQueue() {}
 
 	PriorityQueue(const std::vector<T> &arr, const std::vector<int> &pri)
@@ -69,7 +71,7 @@ public:
 	}
 
 
-	void push(const T& x, int priority)
+	void push(const T& x, double priority)
 	{
 		heap.push(Node(x, priority));
 	}
