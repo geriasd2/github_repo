@@ -9,6 +9,7 @@
 #define POINTS_HPP_
 struct points{
 	int x,y;
+	points(): x(0),y(0){};
 points (int a,int b): x(a),y(b){};
 };
 

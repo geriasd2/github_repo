@@ -79,10 +79,20 @@ int main() {
 
 tree.bejaras(f2);
 
-points tmp(50,30);
+points tmp(30,50);
 vector <points> v2;
-v2=tree.find_nearest_neighbors(tmp,1);
 
-cout<<v2.size()<<" "<<v2[0].x<<" - "<<v2[0].y;
+
+v2=tree.kFind(tmp,5);
+cout<<endl<<v2.size()<<endl;
+for (unsigned int i=v2.size();i>0;i--){
+	cout<<v2[i-1].x<<" - "<<v2[i-1].y<<endl;
+}
+
+
+
+
+
+
 	return 0;
 }

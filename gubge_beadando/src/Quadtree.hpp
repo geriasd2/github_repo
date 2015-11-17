@@ -9,6 +9,8 @@
 #define QUADTREE_HPP_
 #include <vector>
 #include "points.hpp"
+#include "stdlib.h"
+#include "pqueue.hpp"
 class Quadtree{
 	struct node {
 
@@ -27,19 +29,21 @@ class Quadtree{
 
  	std::ostream& _bejaras(std::ostream &o, const node*x);
  	std::vector<node*> _bejaras_2(std::vector<node*> &v, node* x);
+ 	double distance (const points k,const node* n);
+ 	double distance (const points k,const points k1);
+ 	double meroleges(const points k,const node*n);
 
 public:
+ 	std::vector<points> BRUTEFORCE(const points k,int i);
  	std::ostream&  bejaras(std::ostream &o);
-    std::vector <node*> find_neighbors(const points &k);
-    std::vector <points> find_nearest_neighbors(const points &k, unsigned int n );
-    node* find_insert(const points &k);
     void insert(const points &k);
+    std::vector<points> kFind(const points k,int  i);
 
 
 
 
 
-    std::vector<node*>  bejaras_2(std::vector<node*> &v);
+
 
    void robbantas(node* x);
 
@@ -64,80 +68,77 @@ public:
 
 
 
+/*
+std::vector<points> Quadtree:: BRUTEFORCE(const points k,int i){
 
-
-std::vector<points> Quadtree::find_nearest_neighbors(const points &k,unsigned int n){
-
-std::vector<Quadtree::node*> v=find_neighbors(k);
-std::vector<points> v_2;
-std::vector<int> tmp;
-
-for (unsigned int i=0;i<n;i++){
-	int mintav=(k.x-v[0]->key[0].x*k.x-v[0]->key[0].x+k.y-v[0]->key[0].y*k.y-v[0]->key[0].y);
-	int pos1=0;
-	int pos2=0;
-	for (unsigned int j=0;j<v.size();j++){
-		for (unsigned int k=0;k<v[j]->key.size();k++){
-			if (mintav>v[j]->key[k].x*v[j]->key[k].x+v[j]->key[k].y*v[j]->key[k].y){
-				mintav=v[j]->key[k].x*v[j]->key[k].x+v[j]->key[k].y*v[j]->key[k].y;
-				pos1=j;
-				pos2=k;
-			}
-		}
-	}
-
-	v_2.push_back(v[pos1]->key[pos2]);
-}
-
-
-
-
-return v_2;
-}
+};
+*/
 
 
 
 
 
-
-
-
-std::vector<Quadtree::node*> Quadtree::bejaras_2(std::vector<node*>&v){
-
-
-	return _bejaras_2(v,root);
-}
 
 
 std::vector<Quadtree::node*> Quadtree::_bejaras_2(std::vector<node*>&v, node*x){
 
-
-
-if (x->rect){
+if (x->key.size()!=0){
 	v.push_back(x);
 }
 
 
+if (x->child_1!=0){
+_bejaras_2(v,x->child_1);
+}
+if (x->child_2!=0){
+_bejaras_2(v,x->child_2);
+}
+if (x->child_3!=0){
+_bejaras_2(v,x->child_3);
+}
+if (x->child_4!=0){
+_bejaras_2(v,x->child_4);
+}
 
 
-	if (x->child_1!=0){
-		_bejaras_2(v,x->child_1);
+
+
+
+
+return v;
+}
+
+
+
+
+double Quadtree::meroleges (const points k,const node*n){
+
+	if (n->x<k.x && n->x+n->x_length>k.x && n->y<k.y && n->y+n->y_length> k.y){
+		return 0;
 	}
-	if (x->child_2!=0){
-		_bejaras_2(v,x->child_2);
+
+
+
+	if (n->x<k.x && n->x+n->x_length>k.x){
+		if (k.y>n->y){
+			return k.y-n->y-n->y_length;
+		}
+		if (k.y<n->y){
+			return n->y-k.y;
+		}
 	}
-	if (x->child_3!=0){
-		_bejaras_2(v,x->child_3);
+
+	if (n->y<k.y && n->y+n->y_length>k.y){
+		if (k.x>n->x){
+			return k.x-n->x-n->x_length;
+		}
+		if (k.x<n->x){
+			return n->x-k.x;
+		}
 	}
-	if (x->child_4!=0){
-		_bejaras_2(v,x->child_4);
-	}
 
 
-
-	return v;
-
-
+return 0;
 
 
 
@@ -146,29 +147,53 @@ if (x->rect){
 
 
 
-std::vector<Quadtree::node*> Quadtree::find_neighbors(const points &k){
-
-	std::vector <node*> v;
-	bejaras_2(v);
+double Quadtree::distance (const points k1,const points k2){
 
 
-    std::vector<node*> v_3;
-    v_3.push_back(find_insert(k));
 
-
-    for (unsigned int i=0;i<v.size();i++){
-       if (       (v_3[0]->x<v[i]->x && ((v_3[0]->x+v_3[0]->x_length)>v[i]->x )) || (v_3[0]->y<v[i]->y && ((v_3[0]->y+v_3[0]->y_length)>v[i]->y))){
-    	   v_3.push_back(v[i]);
-       }
-    }
+	return sqrt((k1.x-k2.x)*(k1.x-k2.x)+(k1.y-k2.y)*(k1.y-k2.y));
+}
 
 
 
 
+double Quadtree::distance (const points k,const node* n){
+	if (meroleges(k,n)){
+		return meroleges(k,n);
+	}
+	else if (n->x<k.x && n->x+n->x_length>k.x && n->y<k.y && n->y+n->y_length> k.y){
+			return 0;
+		}
+
+	else{
+		points tmp0,tmp1,tmp2,tmp3;
+		tmp0.x=n->x;
+		tmp0.y=n->y;
+		tmp1.x=n->x+n->x_length;
+		tmp1.y=n->y;
+		tmp2.x=n->x;
+		tmp2.y=n->y+n->y_length;
+		tmp3.x=n->x+n->x_length;
+		tmp3.y=n->y+n->y_length;
+		std::vector <double>dist;
+		dist.push_back(distance(k,tmp0));
+		dist.push_back(distance(k,tmp1));
+		dist.push_back(distance(k,tmp2));
+		dist.push_back(distance(k,tmp3));
+
+		double min=dist[0];
+		unsigned int pos=0;
+		for (unsigned int i=1;i<4;i++){
+			if (dist[i]<min){
+				min=dist[i];
+				pos=i;
+			}
+		}
+
+return dist[pos];
+	}
 
 
-
-return v_3;
 }
 
 
@@ -176,27 +201,45 @@ return v_3;
 
 
 
-Quadtree::node* Quadtree::find_insert(const points &k){
 
-	node* temp=root;
 
-	while (temp->rect){
+std::vector<points>Quadtree::kFind(const points p, int k){
 
-	 if (k.x<(temp->x+temp->x_length/2) && k.y<(temp->y+temp->y_length/2)){
-		 temp=temp->child_1;
 
-	 }
-	 else if (k.x<(temp->x+temp->x_length) && k.y<(temp->y+temp->y_length/2)){
-		 temp=temp->child_2;
-	 }
-	 else if (k.x<(temp->x+temp->x_length/2) && k.y<(temp->y+temp->y_length)){
-		 temp=temp->child_3;
 
-	 }
-	 else  {
-		 temp=temp->child_4;
+	std::vector <points> solution;
 
-	 }
+	PriorityQueue <points> q;
+
+	std::vector <node*> leafs;
+
+
+	leafs=_bejaras_2(leafs,root);
+
+
+	for (unsigned int i=0;i<leafs.size();i++){
+		points sign(i,100);
+		q.push(sign,-distance(p,leafs[i]));
+	}
+
+
+
+	while (0<k){
+		points sign=q.top();
+		q.pop();
+		if (sign.y==100){
+			for (unsigned int j=0;j<leafs[sign.x]->key.size();j++){
+				points sign_2(sign.x,j);
+				q.push(sign_2,-distance(p,leafs[sign.x]->key[j]));
+			}
+		}
+			else {
+				solution.push_back(leafs[sign.x]->key[sign.y]);
+				k--;
+			}
+		}
+
+	return solution;
 	}
 
 
@@ -207,8 +250,9 @@ Quadtree::node* Quadtree::find_insert(const points &k){
 
 
 
-return temp;
-}
+
+
+
 
 
 
