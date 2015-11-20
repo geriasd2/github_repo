@@ -11,16 +11,20 @@
 #include "points.hpp"
 #include "stdlib.h"
 #include "pqueue.hpp"
+#include "gyakorlatilag_felesleges.hpp"
+
+
 class Quadtree{
 	struct node {
 
 
 	    node* child_1,*child_2,*child_3,*child_4,*parent;
 	    std::vector <points> key;
+	    unsigned int osztodas;
 	    bool rect;
 	    double x,y,x_length,y_length;
 	    node (node*p,double a,double b,double c,double d): child_1(nullptr), child_2(nullptr),child_3(nullptr),child_4(nullptr),
-	    		parent(p),rect(false),x(a),y(b),x_length(c),y_length(d){};
+	    		parent(p),osztodas(0),rect(false),x(a),y(b),x_length(c),y_length(d){};
 };
 
 
@@ -32,13 +36,14 @@ class Quadtree{
  	double distance (const points k,const node* n);
  	double distance (const points k,const points k1);
  	double meroleges(const points k,const node*n);
+    std::vector <rect> _bejaras_3(std::vector <rect> &v ,  node *x);  //gyakorlatilag semmi értelme csak a kimeneti rect miatt
 
 public:
- //	std::vector<points> BRUTEFORCE(const points k,int i);
+
  	std::ostream&  bejaras(std::ostream &o);
     void insert(const points &k);
     std::vector<points> kFind(const points k,int  i);
-
+    std::vector<rect> bejaras_3(std::vector <rect> &v);     //gyakorlatilag semmi értelme csak a kimeneti rect miatt
 
 
 
@@ -59,7 +64,7 @@ public:
 
 
 
- //   ~Quadtree(){ _destroy(root);};
+
 
 
 
@@ -67,40 +72,50 @@ public:
 
 
 
+// program működésében nem játszik szerepet innentől
 
-/*
-std::vector<points> Quadtree:: BRUTEFORCE(const points k,int z){
-std::vector<points> megoldas;
-	std::vector <node*> leafs;
-
-
-		leafs=_bejaras_2(leafs,root);
-
-		std::vector<double> dist;
-		for (unsigned int i=0;i<leafs.size();i++){
-			for (unsigned int j=0;j<leafs[i]->key.size();j++){
-		dist.push_back(distance(k,leafs[i]->key[j]));
-			}
-		}
+std::vector<rect> Quadtree:: bejaras_3(std::vector<rect>& v){
+	v=_bejaras_3(v,root);
+	return v;
+}
 
 
 
-		for (unsigned int j=0;j<z;j++){
-			int min =dist[j];
-					int pos=j;
-		for (unsigned int i=j+1;i<dist.size();i++){
-			if (dist[i]<min){
-				min=dist[i];
-				pos=i;
-			}
-		}
+std::vector <rect>Quadtree:: _bejaras_3(std::vector<rect>& v,node* x){
+	rect tmp;
+	tmp.pont.x=x->x;
+	tmp.pont.y=x->y;
+	tmp.height=tmp.width=x->x_length;
 
-		}
-
-};
+		v.push_back(tmp);
 
 
-*/
+
+	if (x->child_1!=0){
+	_bejaras_3(v,x->child_1);
+	}
+	if (x->child_2!=0){
+	_bejaras_3(v,x->child_2);
+	}
+	if (x->child_3!=0){
+	_bejaras_3(v,x->child_3);
+	}
+	if (x->child_4!=0){
+	_bejaras_3(v,x->child_4);
+	}
+
+
+
+
+
+
+	return v;
+}
+
+
+
+// idáig
+
 
 
 
@@ -244,7 +259,7 @@ std::vector<points>Quadtree::kFind(const points p, int k){
 	leafs=_bejaras_2(leafs,root);
 
 
-	for (double i=0;i<leafs.size();i++){
+	for (unsigned int i=0;i<leafs.size();i++){
 		points sign(i,100);
 		q.push(sign,-distance(p,leafs[i]));
 	}
@@ -256,7 +271,7 @@ std::vector<points>Quadtree::kFind(const points p, int k){
 		points sign=q.top();
 		q.pop();
 		if (sign.y==100){
-			for (double j=0;j<leafs[sign.x]->key.size();j++){
+			for (unsigned int j=0;j<leafs[sign.x]->key.size();j++){
 				points sign_2(sign.x,j);
 				q.push(sign_2,-distance(p,leafs[sign.x]->key[j]));
 			}
@@ -370,16 +385,20 @@ std::ostream& Quadtree::bejaras(std::ostream &o){
 
 void Quadtree::robbantas(node *x){
 	x->rect=true;
-//std::cout<<x->x<<" "<<x->y<<std::endl;
+
 
 	node* new_child_1=new node(x,x->x,x->y,x->x_length/2,x->y_length/2);
 	node* new_child_2=new node(x,x->x+x->x_length/2,x->y,x->x_length/2,x->y_length/2);
 	node* new_child_3=new node(x,x->x,x->y+x->y_length/2,x->x_length/2,x->y_length/2);
 	node* new_child_4=new node(x,x->x+x->x_length/2,x->y+x->y_length/2,x->x_length/2,x->y_length/2);
+	  new_child_1->osztodas=x->osztodas+1;
+	  new_child_2->osztodas=x->osztodas+1;
+	  new_child_3->osztodas=x->osztodas+1;
+	  new_child_4->osztodas=x->osztodas+1;
 
 
 
-      //  std::cout<<new_child_1->x<<" "<<new_child_1->y<<"  "<<new_child_1->x_length<<" "<<new_child_1->y_length<<std::endl;
+
 
 	x->child_1=new_child_1;
 	x->child_2=new_child_2;
@@ -452,7 +471,12 @@ void Quadtree::insert(const points &k){
 
         	 else {
                    if (check(temp,k)){
-                	   robbantas(temp);
+                	   if (temp->osztodas<20){
+                	   robbantas(temp);}
+                	   else {
+                		   temp->key.push_back(k);
+                		   return;
+                	   }
 
                    }
                    else {return;}
@@ -468,13 +492,6 @@ void Quadtree::insert(const points &k){
 
         	 if (k.x<(temp->x+temp->x_length/2) && k.y<(temp->y+temp->y_length/2)){
         		 temp=temp->child_1;
-
-
-
-
-
-
-
         	 }
         	 else if (k.x<(temp->x+temp->x_length) && k.y<(temp->y+temp->y_length/2)){
         		 temp=temp->child_2;
@@ -495,12 +512,6 @@ void Quadtree::insert(const points &k){
 
 
 }
-
-
-
-
-
-
 
 
 

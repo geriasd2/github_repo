@@ -16,4 +16,6 @@ points (double a,double b): x(a),y(b){};
 
 
 
+
+
 #endif /* POINTS_HPP_ */
